@@ -23,6 +23,7 @@
 | 4. 連線數對照 | 1、4、8 條連線的每秒下載速度 | 每條連線卡在同一個值、隨連線數成倍增加、曲線是平的 → 每條連線限速；單條連線忽高忽低、慢慢爬升 → 被掉包拖慢 |
 | 5. MTU | 不分段 ping，從 1472 bytes 往下 | 大封包無聲消失 → MTU 黑洞。TCP 通常不受影響，VPN 與視訊（UDP）會卡 |
 | 6. 本機背景流量 | 網路介面的流量計數 | 排除是這台 Mac 自己在同步或備份 |
+| 7. 有線對照 | 接上網路線，步驟 2–4 再跑一次 | 有線的掉包與延遲明顯改善 → 問題有一部分在 Wi-Fi 那一段；有線一樣慢 → 問題在閘道之後。先比對兩邊的閘道與上游路由：不同的話可能是兩條不同的線路，改善不一定來自避開了 Wi-Fi |
 
 ### 限速還是壅塞
 
@@ -37,10 +38,13 @@
 - `networkQuality` 預設上下行同時跑；要分開看，加 `-s`。
 - Cloudflare 測速端點（`speed.cloudflare.com/__down`）單次超過 25 MB 會回 403。
 - `networksetup -getMTU` 顯示的可能只是執行期的值，不代表有寫進設定。
+- ping 閘道沒回不一定是掉包：路由器常會壓低回應自己 ping 的優先順序。同時 ping 外網，若穿過閘道的封包 0% 掉包，閘道的轉送就沒有問題。
 
 ### 隱私
 
-診斷輸出會透露位置：BSSID 在公開的 Wi-Fi 資料庫裡查得到接近確切的地點，SSID、路由器名稱、閘道 IP、ISP 路由也能拼出使用者在哪裡。工具的輸出預設會遮掉這些欄位；分享結果前請再看一次。量測結果預設寫在 `results/`，這個資料夾不進 git。
+診斷輸出會透露位置：BSSID 在公開的 Wi-Fi 資料庫裡查得到接近確切的地點，SSID、路由器名稱、閘道 IP、ISP 路由也能拼出使用者在哪裡。工具的輸出預設會遮掉這些欄位；分享結果前請再看一次。
+
+這個 repo 是公開的，只放診斷方法與工具。量測結果預設寫在 `results/`，這個資料夾不進 git；要保存自己的量測紀錄，請放在另一個私人 repo 或只留在本機。
 
 ---
 
@@ -62,6 +66,7 @@ When a hotel, venue, or co-working network feels slow, this method answers three
 | 4. Stream scaling | Per-second download rate with 1, 4, and 8 streams | Each stream pinned at the same rate, total scaling with stream count, flat curve → per-connection throttling; a single stream that ramps and collapses → loss-limited TCP |
 | 5. MTU | Don't-fragment pings from 1472 bytes down | Large packets silently dropped → MTU black hole. TCP usually survives; VPN and video (UDP) stall |
 | 6. Local background traffic | Interface byte counters | Rules out this Mac syncing or backing up |
+| 7. Wired comparison | Plug in Ethernet and rerun steps 2–4 | Loss and latency clearly improve on wired → part of the problem is the Wi-Fi hop; wired is just as slow → the problem is past the gateway. Compare the gateway and upstream route first: if they differ, the two may be separate lines, and the improvement need not come from leaving Wi-Fi |
 
 ### Throttled or congested
 
@@ -76,7 +81,10 @@ One measurement often cannot separate a per-device cap from a shared line conges
 - `networkQuality` runs uplink and downlink concurrently by default; use `-s` to separate them.
 - Cloudflare's speed endpoint (`speed.cloudflare.com/__down`) returns 403 above 25 MB per request.
 - `networksetup -getMTU` may show a runtime value that was never written to the configuration.
+- Unanswered pings to the gateway are not necessarily loss: routers often deprioritize replies to pings addressed to themselves. Ping the internet at the same time; if packets crossing the gateway see 0% loss, its forwarding is fine.
 
 ### Privacy
 
-Diagnostic output reveals location: a BSSID can be looked up in public Wi-Fi databases to a near-exact position, and SSIDs, router names, gateway IPs, and ISP routes narrow it down further. The tool redacts these fields by default; review results before sharing them. Results are written to `results/`, which git ignores.
+Diagnostic output reveals location: a BSSID can be looked up in public Wi-Fi databases to a near-exact position, and SSIDs, router names, gateway IPs, and ISP routes narrow it down further. The tool redacts these fields by default; review results before sharing them.
+
+This repository is public and holds only the method and the tool. Results are written to `results/`, which git ignores; keep your own measurement records in a separate private repository, or only on your machine.
