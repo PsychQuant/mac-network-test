@@ -1,4 +1,8 @@
 .DS_Store
+.build/
+.release/
+.swiftpm/
+*.xcodeproj/
 
 # Measurement output reveals location (BSSID, SSID, gateway, ISP route) — never commit
 results/
